@@ -106,6 +106,10 @@ var terraformPluginFrameworkExternalNameConfigs = map[string]config.ExternalName
 	// the update fails with "failed to find item with key <id>:<key>". See
 	// the reference on datastore_id in the resource configurator.
 	"datadog_datastore_item":                                config.TemplatedStringAsIdentifier("item_key", "{{ .parameters.datastore_id }}:{{ .external_name }}"),
+	"datadog_feature_flag":                                  datadogExternalNameWithInjectedUUID(),
+	"datadog_feature_flag_environment":                      datadogExternalNameWithInjectedUUID(),
+	"datadog_feature_flag_environment_config":               datadogExternalNameWithInjectedUUIDPair(),
+	"datadog_feature_flag_allocations":                      datadogExternalNameWithInjectedUUIDPair(),
 	"datadog_domain_allowlist":                              datadogExternalNameWithInjectedUUID(),
 	"datadog_downtime_schedule":                             datadogExternalNameWithInjectedUUID(),
 	"datadog_gcp_uc_config":                                 datadogExternalNameWithInjectedUUID(),

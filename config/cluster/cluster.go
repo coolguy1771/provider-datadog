@@ -24,6 +24,7 @@ import (
 	"github.com/upbound/provider-datadog/config/cluster/dashboard"
 	"github.com/upbound/provider-datadog/config/cluster/data"
 	"github.com/upbound/provider-datadog/config/cluster/downtime"
+	"github.com/upbound/provider-datadog/config/cluster/featureflag"
 	"github.com/upbound/provider-datadog/config/cluster/governance"
 	"github.com/upbound/provider-datadog/config/cluster/incident"
 	"github.com/upbound/provider-datadog/config/cluster/integration"
@@ -73,6 +74,7 @@ var Configurators = []func(*ujconfig.Provider){
 	dashboard.Configure,
 	data.Configure,
 	downtime.Configure,
+	featureflag.Configure,
 	governance.Configure,
 	incident.Configure,
 	integration.Configure,
