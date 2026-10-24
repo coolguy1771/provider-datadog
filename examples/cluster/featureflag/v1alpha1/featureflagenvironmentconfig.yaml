@@ -1,0 +1,58 @@
+apiVersion: featureflag.upbound.io/v1alpha1
+kind: FeatureFlagEnvironmentConfig
+metadata:
+  annotations:
+    meta.upbound.io/example-id: featureflag/v1alpha1/featureflagenvironmentconfig
+  labels:
+    testing.upbound.io/example-name: default
+  name: checkout-production
+spec:
+  forProvider:
+    enabled: true
+    environmentIdSelector:
+      matchLabels:
+        testing.upbound.io/example-name: default
+    featureFlagIdSelector:
+      matchLabels:
+        testing.upbound.io/example-name: default
+
+---
+
+apiVersion: featureflag.upbound.io/v1alpha1
+kind: FeatureFlag
+metadata:
+  annotations:
+    meta.upbound.io/example-id: featureflag/v1alpha1/featureflagenvironmentconfig
+  labels:
+    testing.upbound.io/example-name: default
+  name: checkout
+spec:
+  forProvider:
+    unarchiveOnCreate: true
+    defaultVariantKey: "off"
+    key: crossplane-example-checkout-redesign
+    name: Checkout redesign
+    valueType: BOOLEAN
+    variants:
+    - key: "off"
+      name: "Off"
+      value: "false"
+    - key: "on"
+      name: "On"
+      value: "true"
+
+---
+
+apiVersion: featureflag.upbound.io/v1alpha1
+kind: FeatureFlagEnvironment
+metadata:
+  annotations:
+    meta.upbound.io/example-id: featureflag/v1alpha1/featureflagenvironmentconfig
+  labels:
+    testing.upbound.io/example-name: default
+  name: production
+spec:
+  forProvider:
+    name: Crossplane Example Production
+    queries:
+    - env:crossplane-example

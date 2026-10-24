@@ -1,0 +1,23 @@
+apiVersion: featureflag.upbound.io/v1alpha1
+kind: FeatureFlag
+metadata:
+  annotations:
+    meta.upbound.io/example-id: featureflag/v1alpha1/featureflag
+  labels:
+    testing.upbound.io/example-name: default
+  name: checkout
+spec:
+  forProvider:
+    unarchiveOnCreate: true
+    defaultVariantKey: "off"
+    description: Enables the redesigned checkout flow
+    key: crossplane-example-checkout-redesign
+    name: Checkout redesign
+    valueType: BOOLEAN
+    variants:
+    - key: "off"
+      name: "Off"
+      value: "false"
+    - key: "on"
+      name: "On"
+      value: "true"
