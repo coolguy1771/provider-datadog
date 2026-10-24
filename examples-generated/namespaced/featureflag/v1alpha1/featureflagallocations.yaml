@@ -1,0 +1,93 @@
+apiVersion: featureflag.m.upbound.io/v1alpha1
+kind: FeatureFlagAllocations
+metadata:
+  annotations:
+    meta.upbound.io/example-id: featureflag/v1alpha1/featureflagallocations
+  labels:
+    testing.upbound.io/example-name: checkout_production
+  name: checkout-production
+  namespace: upbound-system
+spec:
+  forProvider:
+    allocations:
+    - key: checkout-redesign-staff-production
+      name: Checkout redesign for staff
+      targetingRules:
+      - conditions:
+        - attribute: user.tier
+          operator: EQUALS
+          value:
+          - staff
+      type: FEATURE_GATE
+      variantWeights:
+      - value: 100
+        variantKey: "on"
+    environmentIdSelector:
+      matchLabels:
+        testing.upbound.io/example-name: production
+    featureFlagIdSelector:
+      matchLabels:
+        testing.upbound.io/example-name: checkout
+
+---
+
+apiVersion: featureflag.m.upbound.io/v1alpha1
+kind: FeatureFlag
+metadata:
+  annotations:
+    meta.upbound.io/example-id: featureflag/v1alpha1/featureflagallocations
+  labels:
+    testing.upbound.io/example-name: checkout
+  name: checkout
+  namespace: upbound-system
+spec:
+  forProvider:
+    defaultVariantKey: "off"
+    key: checkout-redesign
+    name: Checkout redesign
+    valueType: BOOLEAN
+    variants:
+    - key: "off"
+      name: "Off"
+      value: "false"
+    - key: "on"
+      name: "On"
+      value: "true"
+
+---
+
+apiVersion: featureflag.m.upbound.io/v1alpha1
+kind: FeatureFlagEnvironment
+metadata:
+  annotations:
+    meta.upbound.io/example-id: featureflag/v1alpha1/featureflagallocations
+  labels:
+    testing.upbound.io/example-name: production
+  name: production
+  namespace: upbound-system
+spec:
+  forProvider:
+    name: Production
+    queries:
+    - env:production
+
+---
+
+apiVersion: featureflag.m.upbound.io/v1alpha1
+kind: FeatureFlagEnvironmentConfig
+metadata:
+  annotations:
+    meta.upbound.io/example-id: featureflag/v1alpha1/featureflagallocations
+  labels:
+    testing.upbound.io/example-name: checkout_production
+  name: checkout-production
+  namespace: upbound-system
+spec:
+  forProvider:
+    enabled: true
+    environmentIdSelector:
+      matchLabels:
+        testing.upbound.io/example-name: production
+    featureFlagIdSelector:
+      matchLabels:
+        testing.upbound.io/example-name: checkout

@@ -1,0 +1,16 @@
+apiVersion: featureflag.m.upbound.io/v1alpha1
+kind: FeatureFlagEnvironment
+metadata:
+  annotations:
+    meta.upbound.io/example-id: featureflag/v1alpha1/featureflagenvironment
+  labels:
+    testing.upbound.io/example-name: production
+  name: production
+  namespace: upbound-system
+spec:
+  forProvider:
+    isProduction: true
+    name: Production
+    queries:
+    - env:production
+    requireFeatureFlagApproval: false

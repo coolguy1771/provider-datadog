@@ -3295,6 +3295,11 @@ func (in *GCPSTSInitParameters) DeepCopyInto(out *GCPSTSInitParameters) {
 		*out = new(bool)
 		**out = **in
 	}
+	if in.IsOrgFolderResourceCollectionEnabled != nil {
+		in, out := &in.IsOrgFolderResourceCollectionEnabled, &out.IsOrgFolderResourceCollectionEnabled
+		*out = new(bool)
+		**out = **in
+	}
 	if in.IsPerProjectQuotaEnabled != nil {
 		in, out := &in.IsPerProjectQuotaEnabled, &out.IsPerProjectQuotaEnabled
 		*out = new(bool)
@@ -3543,6 +3548,11 @@ func (in *GCPSTSObservation) DeepCopyInto(out *GCPSTSObservation) {
 		*out = new(bool)
 		**out = **in
 	}
+	if in.IsOrgFolderResourceCollectionEnabled != nil {
+		in, out := &in.IsOrgFolderResourceCollectionEnabled, &out.IsOrgFolderResourceCollectionEnabled
+		*out = new(bool)
+		**out = **in
+	}
 	if in.IsPerProjectQuotaEnabled != nil {
 		in, out := &in.IsPerProjectQuotaEnabled, &out.IsPerProjectQuotaEnabled
 		*out = new(bool)
@@ -3653,6 +3663,11 @@ func (in *GCPSTSParameters) DeepCopyInto(out *GCPSTSParameters) {
 	}
 	if in.IsGlobalLocationEnabled != nil {
 		in, out := &in.IsGlobalLocationEnabled, &out.IsGlobalLocationEnabled
+		*out = new(bool)
+		**out = **in
+	}
+	if in.IsOrgFolderResourceCollectionEnabled != nil {
+		in, out := &in.IsOrgFolderResourceCollectionEnabled, &out.IsOrgFolderResourceCollectionEnabled
 		*out = new(bool)
 		**out = **in
 	}

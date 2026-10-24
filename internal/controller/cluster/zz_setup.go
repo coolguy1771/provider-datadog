@@ -87,6 +87,10 @@ import (
 	webhook "github.com/upbound/provider-datadog/internal/controller/cluster/datadog/webhook"
 	webhookcustomvariable "github.com/upbound/provider-datadog/internal/controller/cluster/datadog/webhookcustomvariable"
 	webhookoauth2clientcredentials "github.com/upbound/provider-datadog/internal/controller/cluster/datadog/webhookoauth2clientcredentials"
+	featureflag "github.com/upbound/provider-datadog/internal/controller/cluster/featureflag/featureflag"
+	featureflagallocations "github.com/upbound/provider-datadog/internal/controller/cluster/featureflag/featureflagallocations"
+	featureflagenvironment "github.com/upbound/provider-datadog/internal/controller/cluster/featureflag/featureflagenvironment"
+	featureflagenvironmentconfig "github.com/upbound/provider-datadog/internal/controller/cluster/featureflag/featureflagenvironmentconfig"
 	control "github.com/upbound/provider-datadog/internal/controller/cluster/governance/control"
 	incidenttype "github.com/upbound/provider-datadog/internal/controller/cluster/incident/incidenttype"
 	notificationrule "github.com/upbound/provider-datadog/internal/controller/cluster/incident/notificationrule"
@@ -242,6 +246,10 @@ func Setup(mgr ctrl.Manager, o controller.Options) error {
 		webhook.Setup,
 		webhookcustomvariable.Setup,
 		webhookoauth2clientcredentials.Setup,
+		featureflag.Setup,
+		featureflagallocations.Setup,
+		featureflagenvironment.Setup,
+		featureflagenvironmentconfig.Setup,
 		control.Setup,
 		incidenttype.Setup,
 		notificationrule.Setup,
@@ -403,6 +411,10 @@ func SetupGated(mgr ctrl.Manager, o controller.Options) error {
 		webhook.SetupGated,
 		webhookcustomvariable.SetupGated,
 		webhookoauth2clientcredentials.SetupGated,
+		featureflag.SetupGated,
+		featureflagallocations.SetupGated,
+		featureflagenvironment.SetupGated,
+		featureflagenvironmentconfig.SetupGated,
 		control.SetupGated,
 		incidenttype.SetupGated,
 		notificationrule.SetupGated,
@@ -563,6 +575,10 @@ func SetupWebhookWithManager(mgr ctrl.Manager) error {
 		webhook.SetupWebhookWithManager,
 		webhookcustomvariable.SetupWebhookWithManager,
 		webhookoauth2clientcredentials.SetupWebhookWithManager,
+		featureflag.SetupWebhookWithManager,
+		featureflagallocations.SetupWebhookWithManager,
+		featureflagenvironment.SetupWebhookWithManager,
+		featureflagenvironmentconfig.SetupWebhookWithManager,
 		control.SetupWebhookWithManager,
 		incidenttype.SetupWebhookWithManager,
 		notificationrule.SetupWebhookWithManager,
