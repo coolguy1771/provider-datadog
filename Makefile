@@ -11,12 +11,21 @@ export TERRAFORM_VERSION ?= 1.5.7
 TERRAFORM_VERSION_VALID := $(shell [ "$(TERRAFORM_VERSION)" = "`printf "$(TERRAFORM_VERSION)\n1.6" | sort -V | head -n1`" ] && echo 1 || echo 0)
 
 export TERRAFORM_PROVIDER_SOURCE ?= DataDog/datadog
-export TERRAFORM_PROVIDER_REPO ?= https://github.com/DataDog/terraform-provider-datadog
+export TERRAFORM_PROVIDER_REPO ?= https://github.com/coolguy1771/terraform-provider-datadog
 # The provider runs the Terraform provider in-process (the Go module pinned in
 # go.mod); Terraform and the provider version below only feed code generation:
 # the provider schema document and the documentation clone.
 export TERRAFORM_PROVIDER_VERSION ?= 4.21.0
+export TERRAFORM_PROVIDER_REF ?= 93a3d9ed5d0044aaa152f4b94524d1ec24f566ec
 export TERRAFORM_DOCS_PATH ?= docs/resources
+# Optional local checkout used to prototype unreleased provider resources.
+# The normal release-based schema and docs flow is unchanged when this is empty.
+export TERRAFORM_PROVIDER_LOCAL_PATH ?=
+# Set to 1 to build schema and docs from TERRAFORM_PROVIDER_REPO at
+# TERRAFORM_PROVIDER_REF instead of a Terraform Registry release.
+export TERRAFORM_PROVIDER_BUILD_FROM_SOURCE ?= 1
+TERRAFORM_PROVIDER_SOURCE_WORKDIR = $(WORK_DIR)/terraform-provider-source
+TERRAFORM_PROVIDER_EFFECTIVE_LOCAL_PATH = $(if $(TERRAFORM_PROVIDER_LOCAL_PATH),$(TERRAFORM_PROVIDER_LOCAL_PATH),$(if $(filter 1,$(TERRAFORM_PROVIDER_BUILD_FROM_SOURCE)),$(abspath $(TERRAFORM_PROVIDER_SOURCE_WORKDIR))))
 
 PLATFORMS ?= linux_amd64 linux_arm64
 
@@ -123,24 +132,53 @@ $(TERRAFORM): check-terraform-version
 	@rm -fr $(TOOLS_HOST_DIR)/tmp-terraform
 	@$(OK) installing terraform $(HOSTOS)-$(HOSTARCH)
 
-$(TERRAFORM_PROVIDER_SCHEMA): $(TERRAFORM)
+terraform-provider-source:
+	@if [ "$(TERRAFORM_PROVIDER_BUILD_FROM_SOURCE)" = "1" ] && [ -z "$(TERRAFORM_PROVIDER_LOCAL_PATH)" ]; then \
+		if [ ! -d "$(TERRAFORM_PROVIDER_SOURCE_WORKDIR)/.git" ]; then \
+			mkdir -p "$(TERRAFORM_PROVIDER_SOURCE_WORKDIR)"; \
+			git -C "$(TERRAFORM_PROVIDER_SOURCE_WORKDIR)" init; \
+			git -C "$(TERRAFORM_PROVIDER_SOURCE_WORKDIR)" remote add origin "$(TERRAFORM_PROVIDER_REPO)"; \
+		fi; \
+		git -C "$(TERRAFORM_PROVIDER_SOURCE_WORKDIR)" remote set-url origin "$(TERRAFORM_PROVIDER_REPO)"; \
+		git -C "$(TERRAFORM_PROVIDER_SOURCE_WORKDIR)" fetch --depth 1 origin "$(TERRAFORM_PROVIDER_REF)"; \
+		git -C "$(TERRAFORM_PROVIDER_SOURCE_WORKDIR)" -c advice.detachedHead=false checkout --detach FETCH_HEAD; \
+	fi
+
+$(TERRAFORM_PROVIDER_SCHEMA): $(TERRAFORM) terraform-provider-source
 	@$(INFO) generating provider schema for $(TERRAFORM_PROVIDER_SOURCE) $(TERRAFORM_PROVIDER_VERSION)
 	@mkdir -p $(TERRAFORM_WORKDIR)
 	@echo '{"terraform":[{"required_providers":[{"provider":{"source":"'"$(TERRAFORM_PROVIDER_SOURCE)"'","version":"'"$(TERRAFORM_PROVIDER_VERSION)"'"}}],"required_version":"'"$(TERRAFORM_VERSION)"'"}]}' > $(TERRAFORM_WORKDIR)/main.tf.json
-	@$(TERRAFORM) -chdir=$(TERRAFORM_WORKDIR) init > $(TERRAFORM_WORKDIR)/terraform-logs.txt 2>&1
-	@$(TERRAFORM) -chdir=$(TERRAFORM_WORKDIR) providers schema -json=true > $(TERRAFORM_PROVIDER_SCHEMA) 2>> $(TERRAFORM_WORKDIR)/terraform-logs.txt
+	@if [ -n "$(TERRAFORM_PROVIDER_EFFECTIVE_LOCAL_PATH)" ]; then \
+		echo "Using local Terraform provider from $(TERRAFORM_PROVIDER_EFFECTIVE_LOCAL_PATH)"; \
+		mkdir -p "$(abspath $(TERRAFORM_WORKDIR))/bin"; \
+		(cd "$(TERRAFORM_PROVIDER_EFFECTIVE_LOCAL_PATH)" && go build -o "$(abspath $(TERRAFORM_WORKDIR))/bin/terraform-provider-datadog$$(go env GOEXE)" .); \
+		binary_dir=$$(cd "$(abspath $(TERRAFORM_WORKDIR))/bin" && pwd); \
+		if command -v cygpath >/dev/null 2>&1; then binary_dir=$$(cygpath -m "$$binary_dir"); fi; \
+		printf 'provider_installation {\n  dev_overrides {\n    "$(TERRAFORM_PROVIDER_SOURCE)" = "%s"\n  }\n  direct {}\n}\n' "$$binary_dir" > "$(TERRAFORM_WORKDIR)/dev.tfrc"; \
+		TF_CLI_CONFIG_FILE="$(abspath $(TERRAFORM_WORKDIR))/dev.tfrc" $(TERRAFORM) -chdir=$(TERRAFORM_WORKDIR) init > $(TERRAFORM_WORKDIR)/terraform-logs.txt 2>&1; \
+		TF_CLI_CONFIG_FILE="$(abspath $(TERRAFORM_WORKDIR))/dev.tfrc" $(TERRAFORM) -chdir=$(TERRAFORM_WORKDIR) providers schema -json=true > $(TERRAFORM_PROVIDER_SCHEMA) 2>> $(TERRAFORM_WORKDIR)/terraform-logs.txt; \
+	else \
+		$(TERRAFORM) -chdir=$(TERRAFORM_WORKDIR) init > $(TERRAFORM_WORKDIR)/terraform-logs.txt 2>&1; \
+		$(TERRAFORM) -chdir=$(TERRAFORM_WORKDIR) providers schema -json=true > $(TERRAFORM_PROVIDER_SCHEMA) 2>> $(TERRAFORM_WORKDIR)/terraform-logs.txt; \
+	fi
 	@$(OK) generating provider schema for $(TERRAFORM_PROVIDER_SOURCE) $(TERRAFORM_PROVIDER_VERSION)
 
-pull-docs:
-	@if [ ! -d "$(WORK_DIR)/$(TERRAFORM_PROVIDER_SOURCE)" ]; then \
-  		mkdir -p "$(WORK_DIR)/$(TERRAFORM_PROVIDER_SOURCE)" && \
-		git clone -c advice.detachedHead=false --depth 1 --filter=blob:none --branch "v$(TERRAFORM_PROVIDER_VERSION)" --sparse "$(TERRAFORM_PROVIDER_REPO)" "$(WORK_DIR)/$(TERRAFORM_PROVIDER_SOURCE)"; \
+pull-docs: terraform-provider-source
+	@if [ -n "$(TERRAFORM_PROVIDER_EFFECTIVE_LOCAL_PATH)" ]; then \
+		rm -rf "$(WORK_DIR)/$(TERRAFORM_PROVIDER_SOURCE)/docs"; \
+		mkdir -p "$(WORK_DIR)/$(TERRAFORM_PROVIDER_SOURCE)/docs"; \
+		cp -R "$(TERRAFORM_PROVIDER_EFFECTIVE_LOCAL_PATH)/$(TERRAFORM_DOCS_PATH)" "$(WORK_DIR)/$(TERRAFORM_PROVIDER_SOURCE)/docs/"; \
+	else \
+		if [ ! -d "$(WORK_DIR)/$(TERRAFORM_PROVIDER_SOURCE)" ]; then \
+			mkdir -p "$(WORK_DIR)/$(TERRAFORM_PROVIDER_SOURCE)" && \
+			git clone -c advice.detachedHead=false --depth 1 --filter=blob:none --branch "$(TERRAFORM_PROVIDER_REF)" --sparse "$(TERRAFORM_PROVIDER_REPO)" "$(WORK_DIR)/$(TERRAFORM_PROVIDER_SOURCE)"; \
+		fi; \
+		git -C "$(WORK_DIR)/$(TERRAFORM_PROVIDER_SOURCE)" sparse-checkout set "$(TERRAFORM_DOCS_PATH)"; \
 	fi
-	@git -C "$(WORK_DIR)/$(TERRAFORM_PROVIDER_SOURCE)" sparse-checkout set "$(TERRAFORM_DOCS_PATH)"
 
 generate.init: $(TERRAFORM_PROVIDER_SCHEMA) pull-docs
 
-.PHONY: $(TERRAFORM_PROVIDER_SCHEMA) pull-docs check-terraform-version
+.PHONY: $(TERRAFORM_PROVIDER_SCHEMA) terraform-provider-source pull-docs check-terraform-version
 # ====================================================================================
 # Targets
 

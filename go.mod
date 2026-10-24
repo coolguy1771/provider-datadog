@@ -30,7 +30,7 @@ require (
 
 require (
 	cloud.google.com/go v0.123.0 // indirect
-	github.com/DataDog/datadog-api-client-go/v2 v2.65.1-0.20260903122748-2f74ee4695a0 // indirect
+	github.com/DataDog/datadog-api-client-go/v2 v2.67.1-0.20261021141900-c695b1b34e40 // indirect
 	github.com/DataDog/zstd v1.5.7 // indirect
 	github.com/Masterminds/semver/v3 v3.5.0 // indirect
 	github.com/agext/levenshtein v1.2.3 // indirect
@@ -142,13 +142,13 @@ require (
 	go.yaml.in/yaml/v2 v2.4.4 // indirect
 	go.yaml.in/yaml/v3 v3.0.5 // indirect
 	golang.org/x/mod v0.41.0 // indirect
-	golang.org/x/net v0.60.0 // indirect
+	golang.org/x/net v0.61.0 // indirect
 	golang.org/x/oauth2 v0.36.0 // indirect
-	golang.org/x/sync v0.23.0 // indirect
-	golang.org/x/sys v0.48.0 // indirect
+	golang.org/x/sync v0.24.0 // indirect
+	golang.org/x/sys v0.49.0 // indirect
 	golang.org/x/telemetry v0.0.0-20260924152758-ed294f943157 // indirect
-	golang.org/x/term v0.46.0 // indirect
-	golang.org/x/text v0.42.0 // indirect
+	golang.org/x/term v0.47.0 // indirect
+	golang.org/x/text v0.43.0 // indirect
 	golang.org/x/time v0.15.0 // indirect
 	golang.org/x/tools v0.51.0 // indirect
 	gomodules.xyz/jsonpatch/v2 v2.5.0 // indirect
@@ -171,4 +171,4 @@ require (
 	sigs.k8s.io/yaml v1.6.0 // indirect
 )
 
-replace github.com/terraform-providers/terraform-provider-datadog => github.com/DataDog/terraform-provider-datadog v1.9.1-0.20260909123144-401c292a1d06
+replace github.com/terraform-providers/terraform-provider-datadog => github.com/coolguy1771/terraform-provider-datadog v1.9.1-0.20261024223258-93a3d9ed5d00
